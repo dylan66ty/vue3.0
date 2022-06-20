@@ -16,7 +16,10 @@ const installModule = (store, rootState, path, module) => {
 
   if (!isRoot) {
     let parentState = path.slice(0, -1).reduce((state, key) => state[key], rootState)
-    parentState[path[path.length - 1]] = module.state
+    store._withCommit(() => {
+      parentState[path[path.length - 1]] = module.state
+
+    })
   }
 
   // _wrappedGettes:{getter(){}}
@@ -97,16 +100,26 @@ class Store {
     installModule(store, state, [], store._modules.root)
     // 定义响应式数据
     resetStoreState(store, state)
-  }
 
+    store._subscribes = []
+    options.plugins.forEach(plugin => plugin(store))
+  }
+  subscribe(fn) {
+    this._subscribes.push(fn)
+  }
   get state() {
     return this._state.data
   }
-
+  replaceState(newState) {
+    // 严格模式下不能改变状态 所以这里要包一层
+    this._withCommit(() => {
+      this._state.data = newState
+    })
+  }
   commit = (type, payload) => {
     const entry = this._mutations[type] || []
     this._withCommit(() => entry.forEach(handler => handler(payload)))
-
+    this._subscribes.forEach(sub => sub({ type, payload }, this.state))
   }
   dispatch = (type, payload) => {
     const entry = this._actions[type] || []
@@ -119,8 +132,21 @@ class Store {
     // 增加$store属性
     app.config.globalProperties.$store = this
   }
+  registerModule(path, rawModule) {
+    const store = this
+    if (typeof path === 'string') path = [path]
+
+    // 在原模块基础上增加一个
+    const newModel = store._modules.register(rawModule, path)
+    // 安装模块
+    installModule(store, store.state, path, newModel)
+
+    resetStoreState(store, store.state)
+
+  }
 
 }
+
 
 
 

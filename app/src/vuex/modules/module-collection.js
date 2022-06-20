@@ -24,6 +24,7 @@ class ModuleCollection {
       })
 
     }
+    return newModule
   }
   getNamespaced(path) {
     let module = this.root

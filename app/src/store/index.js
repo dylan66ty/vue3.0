@@ -1,6 +1,20 @@
 import { createStore } from '@/vuex'
 
-export default createStore({
+
+function customPlugin(store) {
+  let local = localStorage.getItem('VUEX:STATE')
+  if (local) {
+    store.replaceState(JSON.parse(local))
+  }
+  store.subscribe((mutation, state) => {
+    localStorage.setItem('VUEX:STATE', JSON.stringify(state))
+  })
+}
+
+const store = createStore({
+  plugins: [
+    customPlugin
+  ],
   state: {
     count: 0
   },
@@ -26,17 +40,30 @@ export default createStore({
     }
   },
   modules: {
-    a: {
-      namespaced: true,
-      state: {
-        count: 0
-      },
-      mutations: {
-        ADD(state, value) {
-          state.count += value
-        }
-      }
-    },
+    // a: {
+    //   namespaced: true,
+    //   state: {
+    //     count: 0
+    //   },
+    //   mutations: {
+    //     ADD(state, value) {
+    //       state.count += value
+    //     }
+    //   },
+    //   modules: {
+    //     aa: {
+    //       namespaced: true,
+    //       state: {
+    //         count: 0
+    //       },
+    //       mutations: {
+    //         ADD(state, value) {
+    //           state.count += value
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
     b: {
       namespaced: true,
       state: {
@@ -52,3 +79,20 @@ export default createStore({
   },
   strict: true
 })
+
+
+// store.registerModule(['a'], {
+//   namespaced: true,
+//   state: {
+//     count: 100
+//   },
+//   mutations: {
+//     ADD(state, payload) {
+//       state.count += payload
+//     }
+//   }
+// })
+
+export default store
+
+

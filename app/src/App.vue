@@ -10,8 +10,10 @@
     <div>模块</div>
     <h1>a {{ aCount }}</h1>
     <h1>b {{ bCount }}</h1>
-    <button @click="$store.commit('a/ADD', 1)">改A</button>
-    <button @click="$store.commit('b/ADD', 2)">改B</button>
+    <h1>aa {{ aaCount }}</h1>
+    <button @click="$store.commit('a/ADD', 1)">改a</button>
+    <button @click="$store.commit('b/ADD', 1)">改b</button>
+    <button @click="$store.commit('a/aa/ADD', 1)">改aa</button>
   </div>
 </template>
 
@@ -40,12 +42,14 @@ const useCount = () => {
 export default {
   setup() {
     const store = useStore()
+    console.log(store)
     return {
       computedCount: computed(() => store.state.count),
       computedGetters: computed(() => store.getters.count1),
       ...useCount(),
       aCount: computed(() => store.state.a.count),
       bCount: computed(() => store.state.b.count)
+      // aaCount: computed(() => store.state.a.aa.count)
     }
   }
 }
